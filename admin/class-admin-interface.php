@@ -33,6 +33,15 @@ class WP_URL_Manager_Admin_Interface {
             'dashicons-admin-links',
             30
         );
+
+        add_submenu_page(
+            'wp-url-manager',
+            __('Vérifier les mises à jour', 'wp-url-manager'),
+            __('Mises à jour', 'wp-url-manager'),
+            'manage_options',
+            'wp-url-manager-updates',
+            array($this, 'render_updates_page')
+        );
     }
 
     public function enqueue_admin_assets($hook) {
@@ -75,6 +84,38 @@ class WP_URL_Manager_Admin_Interface {
         $post_types = $this->get_available_post_types();
         
         include WP_URL_MANAGER_PLUGIN_DIR . 'admin/views/main-page.php';
+    }
+
+    public function render_updates_page() {
+        $current_version = WP_URL_MANAGER_VERSION;
+        $cache_key = 'wp_url_manager_update_cache';
+        $cache = get_transient($cache_key);
+        $last_check = $cache ? __('Moins d\'1 heure', 'wp-url-manager') : __('Jamais', 'wp-url-manager');
+        
+        if (isset($_GET['check-now']) && $_GET['check-now'] === '1') {
+            delete_transient($cache_key);
+            delete_site_transient('update_plugins');
+            $cache = false;
+            $last_check = __('À l\'instant', 'wp-url-manager');
+        }
+
+        $response = wp_remote_get(
+            'https://api.github.com/repos/webAnalyste/WP-URL-Manager/releases/latest',
+            array('timeout' => 10, 'headers' => array('Accept' => 'application/vnd.github.v3+json'))
+        );
+
+        $remote_version = null;
+        $update_available = false;
+        
+        if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
+            $body = json_decode(wp_remote_retrieve_body($response), true);
+            if (!empty($body['tag_name'])) {
+                $remote_version = ltrim($body['tag_name'], 'v');
+                $update_available = version_compare($current_version, $remote_version, '<');
+            }
+        }
+
+        include WP_URL_MANAGER_PLUGIN_DIR . 'admin/views/updates-page.php';
     }
 
     private function get_available_post_types() {

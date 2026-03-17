@@ -24,6 +24,8 @@ class WP_URL_Manager_Updater {
         add_filter('plugins_api', array($this, 'plugin_info'), 20, 3);
         add_filter('site_transient_update_plugins', array($this, 'check_update'));
         add_action('upgrader_process_complete', array($this, 'purge_cache'), 10, 2);
+        add_action('admin_init', array($this, 'force_check_on_plugins_page'));
+        add_action('load-plugins.php', array($this, 'maybe_force_check'));
     }
 
     public function check_update($transient) {
@@ -124,7 +126,7 @@ class WP_URL_Manager_Updater {
             'info' => $body,
         );
 
-        set_transient($this->cache_key, $cache_data, 12 * HOUR_IN_SECONDS);
+        set_transient($this->cache_key, $cache_data, 1 * HOUR_IN_SECONDS);
 
         return $version;
     }
@@ -198,6 +200,25 @@ class WP_URL_Manager_Updater {
     public function purge_cache($upgrader, $options) {
         if ($options['action'] === 'update' && $options['type'] === 'plugin') {
             delete_transient($this->cache_key);
+        }
+    }
+
+    public function force_check_on_plugins_page() {
+        if (isset($_GET['force-check']) && $_GET['force-check'] === 'wp-url-manager') {
+            delete_transient($this->cache_key);
+            delete_site_transient('update_plugins');
+            wp_redirect(admin_url('plugins.php?force-check-done=1'));
+            exit;
+        }
+    }
+
+    public function maybe_force_check() {
+        $screen = get_current_screen();
+        if ($screen && $screen->id === 'plugins') {
+            $cache = get_transient($this->cache_key);
+            if ($cache === false) {
+                delete_site_transient('update_plugins');
+            }
         }
     }
 }

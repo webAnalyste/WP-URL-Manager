@@ -102,6 +102,23 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
 ---
 
+## [1.0.2] - 2026-03-17
+
+### ⚡ Améliorations
+
+- **Mise à jour quasi temps réel** : Vérification toutes les heures au lieu de 12h
+- **Page de vérification manuelle** : Nouvelle page "Mises à jour" dans le menu admin
+- **Vérification forcée** : Bouton "Vérifier maintenant" pour forcer une vérification immédiate
+- **Meilleure UX** : Affichage clair de la version actuelle et disponible
+- **Auto-refresh** : Vérification automatique lors de l'accès à la page Extensions
+
+### 🔧 Technique
+
+- Cache réduit de 12h à 1h (HOUR_IN_SECONDS)
+- Ajout du hook `load-plugins.php` pour vérification automatique
+- Nouvelle page admin `wp-url-manager-updates`
+- Interface moderne pour le suivi des mises à jour
+
 ## [1.0.1] - 2026-03-17
 
 ### 🐛 Corrections
