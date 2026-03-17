@@ -1,0 +1,183 @@
+# WP URL Manager
+# Copyright (C) 2026 webAnalyste
+# This file is distributed under the GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: WP URL Manager 1.0.0\n"
+"Report-Msgid-Bugs-To: https://github.com/webAnalyste/WP-URL-Manager/issues\n"
+"POT-Creation-Date: 2026-03-17 22:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "WP URL Manager"
+msgstr ""
+
+msgid "URL Manager"
+msgstr ""
+
+msgid "Gérez vos structures d'URL et redirections 301 par type de contenu"
+msgstr ""
+
+msgid "Nouvelle règle"
+msgstr ""
+
+msgid "Aide rapide"
+msgstr ""
+
+msgid "Placeholders standards"
+msgstr ""
+
+msgid "Slug du contenu"
+msgstr ""
+
+msgid "ID du contenu"
+msgstr ""
+
+msgid "Année (YYYY)"
+msgstr ""
+
+msgid "Mois (MM)"
+msgstr ""
+
+msgid "Jour (DD)"
+msgstr ""
+
+msgid "Type de contenu"
+msgstr ""
+
+msgid "Slug auteur"
+msgstr ""
+
+msgid "Taxonomies"
+msgstr ""
+
+msgid "Exemple : {taxonomy:category}"
+msgstr ""
+
+msgid "Exemples de patterns"
+msgstr ""
+
+msgid "Aucune règle configurée"
+msgstr ""
+
+msgid "Créez votre première règle pour commencer à gérer vos URLs"
+msgstr ""
+
+msgid "Créer ma première règle"
+msgstr ""
+
+msgid "Modifier"
+msgstr ""
+
+msgid "Supprimer"
+msgstr ""
+
+msgid "Source"
+msgstr ""
+
+msgid "Cible"
+msgstr ""
+
+msgid "Libellé de la règle"
+msgstr ""
+
+msgid "Pattern source (ancienne URL)"
+msgstr ""
+
+msgid "Optionnel. Laissez vide si pas de redirection."
+msgstr ""
+
+msgid "Pattern cible (nouvelle URL)"
+msgstr ""
+
+msgid "Activer la redirection 301"
+msgstr ""
+
+msgid "Redirige automatiquement l'ancienne URL vers la nouvelle."
+msgstr ""
+
+msgid "Règle active"
+msgstr ""
+
+msgid "Annuler"
+msgstr ""
+
+msgid "Enregistrer"
+msgstr ""
+
+msgid "Êtes-vous sûr de vouloir supprimer cette règle ?"
+msgstr ""
+
+msgid "Enregistrement..."
+msgstr ""
+
+msgid "Règle enregistrée avec succès"
+msgstr ""
+
+msgid "Une erreur est survenue"
+msgstr ""
+
+msgid "Validation..."
+msgstr ""
+
+msgid "Pattern valide"
+msgstr ""
+
+msgid "Pattern invalide"
+msgstr ""
+
+msgid "Le pattern ne peut pas être vide."
+msgstr ""
+
+msgid "Le pattern doit commencer par un slash (/)."
+msgstr ""
+
+msgid "Le pattern doit se terminer par un slash (/)."
+msgstr ""
+
+msgid "Le pattern doit contenir au moins un identifiant de contenu (%postname%, %post_id%, etc.)."
+msgstr ""
+
+msgid "Caractères invalides détectés : %s"
+msgstr ""
+
+msgid "Placeholders invalides : %s"
+msgstr ""
+
+msgid "La taxonomie \"%s\" n'existe pas."
+msgstr ""
+
+msgid "La taxonomie \"%s\" n'est pas associée au type de contenu \"%s\"."
+msgstr ""
+
+msgid "Permission refusée"
+msgstr ""
+
+msgid "Règle créée avec succès"
+msgstr ""
+
+msgid "Règle mise à jour avec succès"
+msgstr ""
+
+msgid "ID de règle manquant"
+msgstr ""
+
+msgid "Impossible de supprimer la règle"
+msgstr ""
+
+msgid "Règle supprimée avec succès"
+msgstr ""
+
+msgid "Règle introuvable"
+msgstr ""
+
+msgid "Statut mis à jour"
+msgstr ""
+
+msgid "Pattern source invalide"
+msgstr ""
