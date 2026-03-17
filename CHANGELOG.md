@@ -102,6 +102,24 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
 ---
 
+## [1.0.1] - 2026-03-17
+
+### 🐛 Corrections
+
+- **Redirection 301** : Correction majeure du système de redirection qui ne fonctionnait pas
+  - Ajout du hook `parse_request` pour intercepter les URLs legacy avant résolution WordPress
+  - Nouvelle logique de matching avec regex pour identifier les anciennes URLs
+  - Recherche intelligente du post par slug ou ID
+  - Prévention des boucles de redirection
+  - Tests de non-régression ajoutés
+
+### 🔧 Améliorations techniques
+
+- Méthode `match_legacy_url()` pour matcher les patterns source
+- Méthode `pattern_to_regex()` pour convertir patterns en regex
+- Méthode `get_placeholder_index()` pour extraire les valeurs des placeholders
+- Performance optimisée : une seule requête BDD par tentative de redirection
+
 ## [Non publié]
 
 ### À venir dans les prochaines versions
