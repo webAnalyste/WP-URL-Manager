@@ -13,6 +13,7 @@ class WP_URL_Manager {
     private $rewrite_manager;
     private $redirect_manager;
     private $admin_interface;
+    private $updater;
 
     public static function instance() {
         if (is_null(self::$instance)) {
@@ -33,6 +34,7 @@ class WP_URL_Manager {
         require_once WP_URL_MANAGER_PLUGIN_DIR . 'includes/class-redirect-manager.php';
         require_once WP_URL_MANAGER_PLUGIN_DIR . 'includes/class-placeholder-resolver.php';
         require_once WP_URL_MANAGER_PLUGIN_DIR . 'includes/class-pattern-validator.php';
+        require_once WP_URL_MANAGER_PLUGIN_DIR . 'includes/class-updater.php';
         
         if (is_admin()) {
             require_once WP_URL_MANAGER_PLUGIN_DIR . 'admin/class-admin-interface.php';
@@ -52,6 +54,11 @@ class WP_URL_Manager {
         
         if (is_admin()) {
             $this->admin_interface = new WP_URL_Manager_Admin_Interface($this->rules_manager);
+            $this->updater = new WP_URL_Manager_Updater(
+                WP_URL_MANAGER_PLUGIN_FILE,
+                'webAnalyste/WP-URL-Manager',
+                WP_URL_MANAGER_VERSION
+            );
         }
     }
 
