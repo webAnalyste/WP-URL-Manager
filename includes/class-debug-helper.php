@@ -87,8 +87,15 @@ class WP_URL_Manager_Debug_Helper {
         echo '</pre>';
         
         echo '<h2>PHP Info</h2>';
-        echo '<p><strong>WP_DEBUG:</strong> ' . (defined('WP_DEBUG') && WP_DEBUG ? 'ON' : 'OFF') . '</p>';
+        echo '<p><strong>WP_DEBUG:</strong> ' . (defined('WP_DEBUG') && WP_DEBUG ? '✅ ON' : '❌ OFF') . '</p>';
+        echo '<p><strong>WP_DEBUG_LOG:</strong> ' . (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG ? '✅ ON' : '❌ OFF') . '</p>';
         echo '<p><strong>Plugin Version:</strong> ' . WP_URL_MANAGER_VERSION . '</p>';
+        
+        if (!(defined('WP_DEBUG') && WP_DEBUG)) {
+            echo '<div class="notice notice-warning" style="margin-top: 20px;"><p><strong>⚠️ WP_DEBUG est désactivé</strong><br>';
+            echo 'Pour voir les logs de debug, activez WP_DEBUG dans wp-config.php :<br>';
+            echo '<code>define(\'WP_DEBUG\', true);<br>define(\'WP_DEBUG_LOG\', true);</code></p></div>';
+        }
         
         echo '</div>';
     }

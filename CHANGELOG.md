@@ -102,6 +102,17 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
 ---
 
+## [1.0.7] - 2026-03-18
+
+### 🔧 Amélioration
+
+**Page Debug toujours visible**
+- La page "Debug" est maintenant **toujours accessible** dans le menu (pas seulement si WP_DEBUG activé)
+- Avertissement affiché si WP_DEBUG est désactivé
+- Affichage du statut WP_DEBUG et WP_DEBUG_LOG
+
+**Accès :** URL Manager > Debug
+
 ## [1.0.6] - 2026-03-18
 
 ### 🐛 Corrections CRITIQUES

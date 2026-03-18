@@ -43,9 +43,7 @@ class WP_URL_Manager_Admin_Interface {
             array($this, 'render_updates_page')
         );
         
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            WP_URL_Manager_Debug_Helper::add_debug_page();
-        }
+        WP_URL_Manager_Debug_Helper::add_debug_page();
     }
 
     public function enqueue_admin_assets($hook) {
