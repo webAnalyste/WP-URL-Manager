@@ -102,6 +102,57 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
 ---
 
+## [1.0.6] - 2026-03-18
+
+### 🐛 Corrections CRITIQUES
+
+**Problème 1 : Plugin se désactive après mise à jour**
+- Ajout de vérifications d'existence de fichiers avant `require_once`
+- Ajout de `try/catch` dans `init_components()`
+- Vérification de l'existence des classes avant instanciation
+- Logs d'erreurs pour diagnostic
+
+**Problème 2 : Redirection 301 → 404 persistant**
+- Ajout de logs détaillés pour debug (si `WP_DEBUG` activé)
+- Log de chaque rewrite rule ajoutée
+- Log de chaque tentative de redirection
+- Amélioration de la page Debug avec :
+  - Liste complète des rewrite rules WordPress
+  - Bouton "Flush Rewrite Rules"
+  - Formulaire de test d'URL
+  - Infos système (WP_DEBUG, version plugin)
+
+### 🔧 Debug
+
+**Pour activer les logs :**
+1. Dans `wp-config.php`, ajouter :
+```php
+define('WP_DEBUG', true);
+define('WP_DEBUG_LOG', true);
+```
+
+2. Aller dans **URL Manager > Debug**
+3. Vérifier que votre pattern apparaît dans les rewrite rules WordPress
+4. Exemple attendu : `^articles/([^/]+)/?$` => `index.php?name=$matches[1]&post_type=post`
+
+**Si le pattern n'apparaît PAS :**
+- Cliquer sur "Flush Rewrite Rules"
+- Vérifier les logs dans `wp-content/debug.log`
+
+### ✅ Instructions de test
+
+1. **Installer v1.0.6**
+2. **Activer WP_DEBUG**
+3. **Créer une règle** :
+   - Source : `/%postname%/`
+   - Cible : `/articles/%postname%/`
+   - Redirection 301 : ✅
+4. **Sauvegarder** (flush auto)
+5. **Aller dans Debug** et vérifier que `^articles/([^/]+)/?$` existe
+6. **Créer un article** "test"
+7. **Tester** `/test/` → doit rediriger vers `/articles/test/`
+8. **Vérifier les logs** dans `wp-content/debug.log`
+
 ## [1.0.5] - 2026-03-18
 
 ### 🐛 Correction DÉFINITIVE - Redirection 301

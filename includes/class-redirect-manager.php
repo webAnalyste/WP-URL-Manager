@@ -50,7 +50,14 @@ class WP_URL_Manager_Redirect_Manager {
             $current_path = rtrim(parse_url($current_url, PHP_URL_PATH), '/');
             $target_path = rtrim(parse_url($target_url, PHP_URL_PATH), '/');
 
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log("WP URL Manager Redirect: Current={$current_path}, Target={$target_path}");
+            }
+
             if ($current_path !== $target_path) {
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log("WP URL Manager: Redirecting 301 to {$target_url}");
+                }
                 wp_safe_redirect($target_url, 301);
                 exit;
             }

@@ -28,17 +28,33 @@ class WP_URL_Manager {
     }
 
     private function load_dependencies() {
-        require_once WP_URL_MANAGER_PLUGIN_DIR . 'includes/class-rules-manager.php';
-        require_once WP_URL_MANAGER_PLUGIN_DIR . 'includes/class-pattern-validator.php';
-        require_once WP_URL_MANAGER_PLUGIN_DIR . 'includes/class-placeholder-resolver.php';
-        require_once WP_URL_MANAGER_PLUGIN_DIR . 'includes/class-permalink-manager.php';
-        require_once WP_URL_MANAGER_PLUGIN_DIR . 'includes/class-rewrite-manager.php';
-        require_once WP_URL_MANAGER_PLUGIN_DIR . 'includes/class-redirect-manager.php';
-        require_once WP_URL_MANAGER_PLUGIN_DIR . 'includes/class-debug-helper.php';
-        require_once WP_URL_MANAGER_PLUGIN_DIR . 'includes/class-updater.php';
+        $required_files = array(
+            'includes/class-rules-manager.php',
+            'includes/class-pattern-validator.php',
+            'includes/class-placeholder-resolver.php',
+            'includes/class-permalink-manager.php',
+            'includes/class-rewrite-manager.php',
+            'includes/class-redirect-manager.php',
+            'includes/class-debug-helper.php',
+            'includes/class-updater.php',
+        );
+        
+        foreach ($required_files as $file) {
+            $filepath = WP_URL_MANAGER_PLUGIN_DIR . $file;
+            if (file_exists($filepath)) {
+                require_once $filepath;
+            } else {
+                error_log('WP URL Manager: Missing file - ' . $file);
+            }
+        }
         
         if (is_admin()) {
-            require_once WP_URL_MANAGER_PLUGIN_DIR . 'admin/class-admin-interface.php';
+            $admin_file = WP_URL_MANAGER_PLUGIN_DIR . 'admin/class-admin-interface.php';
+            if (file_exists($admin_file)) {
+                require_once $admin_file;
+            } else {
+                error_log('WP URL Manager: Missing admin interface file');
+            }
         }
     }
 
@@ -48,18 +64,26 @@ class WP_URL_Manager {
     }
 
     public function init_components() {
-        $this->rules_manager = new WP_URL_Manager_Rules_Manager();
-        $this->permalink_manager = new WP_URL_Manager_Permalink_Manager($this->rules_manager);
-        $this->rewrite_manager = new WP_URL_Manager_Rewrite_Manager($this->rules_manager);
-        $this->redirect_manager = new WP_URL_Manager_Redirect_Manager($this->rules_manager);
-        
-        if (is_admin()) {
-            $this->admin_interface = new WP_URL_Manager_Admin_Interface($this->rules_manager);
-            $this->updater = new WP_URL_Manager_Updater(
-                WP_URL_MANAGER_PLUGIN_FILE,
-                'webAnalyste/WP-URL-Manager',
-                WP_URL_MANAGER_VERSION
-            );
+        try {
+            $this->rules_manager = new WP_URL_Manager_Rules_Manager();
+            $this->permalink_manager = new WP_URL_Manager_Permalink_Manager($this->rules_manager);
+            $this->rewrite_manager = new WP_URL_Manager_Rewrite_Manager($this->rules_manager);
+            $this->redirect_manager = new WP_URL_Manager_Redirect_Manager($this->rules_manager);
+            
+            if (is_admin()) {
+                if (class_exists('WP_URL_Manager_Admin_Interface')) {
+                    $this->admin_interface = new WP_URL_Manager_Admin_Interface($this->rules_manager);
+                }
+                if (class_exists('WP_URL_Manager_Updater')) {
+                    $this->updater = new WP_URL_Manager_Updater(
+                        WP_URL_MANAGER_PLUGIN_FILE,
+                        'webAnalyste/WP-URL-Manager',
+                        WP_URL_MANAGER_VERSION
+                    );
+                }
+            }
+        } catch (Exception $e) {
+            error_log('WP URL Manager init error: ' . $e->getMessage());
         }
     }
 

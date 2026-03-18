@@ -28,6 +28,10 @@ class WP_URL_Manager_Rewrite_Manager {
 
             $this->add_rule_rewrite($rule);
         }
+        
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('WP URL Manager: ' . count($rules) . ' rewrite rules added');
+        }
     }
 
     private function add_rule_rewrite($rule) {
@@ -39,6 +43,10 @@ class WP_URL_Manager_Rewrite_Manager {
 
         if ($regex && $query) {
             add_rewrite_rule($regex, $query, 'top');
+            
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log("WP URL Manager: Added rule - Regex: {$regex} → Query: {$query}");
+            }
         }
     }
 

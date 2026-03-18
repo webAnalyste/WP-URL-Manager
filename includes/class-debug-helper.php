@@ -45,9 +45,38 @@ class WP_URL_Manager_Debug_Helper {
         echo '<div class="wrap">';
         echo '<h1>WP URL Manager - Debug</h1>';
         
-        echo '<h2>Rewrite Rules</h2>';
-        echo '<pre style="background: #f5f5f5; padding: 15px; overflow: auto;">';
-        print_r($wp_rewrite->rules);
+        if (isset($_POST['flush_rules']) && check_admin_referer('wp_url_manager_debug')) {
+            flush_rewrite_rules();
+            echo '<div class="notice notice-success"><p><strong>✅ Rewrite rules flushed!</strong></p></div>';
+        }
+        
+        if (isset($_POST['test_url']) && check_admin_referer('wp_url_manager_debug')) {
+            $test_url = sanitize_text_field($_POST['test_url_input']);
+            echo '<div class="notice notice-info"><p><strong>Test URL:</strong> ' . esc_html($test_url) . '</p></div>';
+        }
+        
+        echo '<h2>Actions</h2>';
+        echo '<form method="post" style="margin-bottom: 20px;">';
+        wp_nonce_field('wp_url_manager_debug');
+        echo '<button type="submit" name="flush_rules" class="button button-primary">Flush Rewrite Rules</button>';
+        echo '</form>';
+        
+        echo '<form method="post" style="margin-bottom: 20px;">';
+        wp_nonce_field('wp_url_manager_debug');
+        echo '<input type="text" name="test_url_input" placeholder="/articles/test/" style="width: 300px;" />';
+        echo '<button type="submit" name="test_url" class="button">Test URL</button>';
+        echo '</form>';
+        
+        echo '<h2>WordPress Rewrite Rules</h2>';
+        echo '<p><em>Recherchez votre pattern (ex: "articles") dans la liste ci-dessous</em></p>';
+        echo '<pre style="background: #f5f5f5; padding: 15px; overflow: auto; max-height: 400px;">';
+        if (!empty($wp_rewrite->rules)) {
+            foreach ($wp_rewrite->rules as $regex => $query) {
+                echo esc_html($regex) . ' => ' . esc_html($query) . "\n";
+            }
+        } else {
+            echo 'Aucune rewrite rule trouvée';
+        }
         echo '</pre>';
         
         echo '<h2>Plugin Rules</h2>';
@@ -57,16 +86,9 @@ class WP_URL_Manager_Debug_Helper {
         print_r($rules);
         echo '</pre>';
         
-        echo '<h2>Actions</h2>';
-        echo '<form method="post">';
-        wp_nonce_field('wp_url_manager_debug');
-        echo '<button type="submit" name="flush_rules" class="button button-primary">Flush Rewrite Rules</button>';
-        echo '</form>';
-        
-        if (isset($_POST['flush_rules']) && check_admin_referer('wp_url_manager_debug')) {
-            flush_rewrite_rules();
-            echo '<div class="notice notice-success"><p>Rewrite rules flushed!</p></div>';
-        }
+        echo '<h2>PHP Info</h2>';
+        echo '<p><strong>WP_DEBUG:</strong> ' . (defined('WP_DEBUG') && WP_DEBUG ? 'ON' : 'OFF') . '</p>';
+        echo '<p><strong>Plugin Version:</strong> ' . WP_URL_MANAGER_VERSION . '</p>';
         
         echo '</div>';
     }
