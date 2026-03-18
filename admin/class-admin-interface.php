@@ -55,10 +55,17 @@ class WP_URL_Manager_Admin_Interface {
             array(),
             WP_URL_MANAGER_VERSION
         );
+        
+        wp_enqueue_style(
+            'wp-url-manager-admin-v2',
+            WP_URL_MANAGER_PLUGIN_URL . 'admin/css/admin-style-v2.css',
+            array('wp-url-manager-admin'),
+            WP_URL_MANAGER_VERSION
+        );
 
         wp_enqueue_script(
             'wp-url-manager-admin',
-            WP_URL_MANAGER_PLUGIN_URL . 'admin/js/admin-script.js',
+            WP_URL_MANAGER_PLUGIN_URL . 'admin/js/admin-script-v2.js',
             array('jquery'),
             WP_URL_MANAGER_VERSION,
             true

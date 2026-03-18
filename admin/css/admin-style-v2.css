@@ -1,0 +1,202 @@
+/* Ajout des styles pour la nouvelle interface v2 */
+
+.wp-url-manager-notification {
+    position: fixed;
+    top: 32px;
+    right: -300px;
+    background: white;
+    padding: 16px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 999999;
+    transition: right 0.3s ease;
+    min-width: 250px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.wp-url-manager-notification.show {
+    right: 20px;
+}
+
+.wp-url-manager-notification.success {
+    border-left-color: var(--success-color);
+    color: var(--success-color);
+}
+
+.wp-url-manager-notification.error {
+    border-left-color: var(--error-color);
+    color: var(--error-color);
+}
+
+.dashicons.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Ajout des styles pour la nouvelle interface v2 */
+
+.wp-url-manager-container-v2 {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.wp-url-manager-sidebar-v2 {
+    position: sticky;
+    top: 32px;
+}
+
+.wp-url-manager-main-v2 {
+    min-height: 400px;
+}
+
+.rules-view {
+    display: none;
+}
+
+.rules-view.active {
+    display: block;
+}
+
+.form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.form-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.form-header .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.wp-url-manager-form .form-row {
+    margin-bottom: 20px;
+}
+
+.wp-url-manager-form .form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-dark);
+    font-size: 14px;
+}
+
+.wp-url-manager-form .required {
+    color: var(--error-color);
+}
+
+.wp-url-manager-form .form-control {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    transition: var(--transition);
+}
+
+.wp-url-manager-form .form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(34, 113, 177, 0.1);
+}
+
+.wp-url-manager-form .form-help {
+    margin: 6px 0 0 0;
+    font-size: 13px;
+    color: var(--text-light);
+}
+
+.wp-url-manager-form .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.wp-url-manager-form .checkbox-label input[type="checkbox"] {
+    margin: 0;
+    cursor: pointer;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color);
+}
+
+.validation-message {
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    display: none;
+}
+
+.validation-message.success {
+    display: block;
+    background: #ecfdf5;
+    color: var(--success-color);
+    border-left: 3px solid var(--success-color);
+}
+
+.validation-message.error {
+    display: block;
+    background: #fef2f2;
+    color: var(--error-color);
+    border-left: 3px solid var(--error-color);
+}
+
+.url-preview {
+    margin-top: 8px;
+    padding: 10px 14px;
+    background: var(--bg-light);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--text-light);
+    font-family: monospace;
+    display: none;
+}
+
+.url-preview.show {
+    display: block;
+}
+
+.url-preview strong {
+    color: var(--text-dark);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .wp-url-manager-container-v2 {
+        grid-template-columns: 1fr;
+    }
+
+    .wp-url-manager-sidebar-v2 {
+        position: static;
+    }
+}

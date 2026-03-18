@@ -158,7 +158,29 @@ class WP_URL_Manager_Updater {
     }
 
     private function get_download_url($version) {
-        return "https://github.com/{$this->github_repo}/archive/refs/tags/v{$version}.zip";
+        $response = wp_remote_get(
+            "https://api.github.com/repos/{$this->github_repo}/releases/tags/v{$version}",
+            array(
+                'timeout' => 10,
+                'headers' => array('Accept' => 'application/vnd.github.v3+json'),
+            )
+        );
+
+        if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+            return "https://github.com/{$this->github_repo}/releases/download/v{$version}/wp-url-manager-{$version}.zip";
+        }
+
+        $body = json_decode(wp_remote_retrieve_body($response), true);
+        
+        if (!empty($body['assets']) && is_array($body['assets'])) {
+            foreach ($body['assets'] as $asset) {
+                if (isset($asset['name']) && strpos($asset['name'], '.zip') !== false) {
+                    return $asset['browser_download_url'];
+                }
+            }
+        }
+
+        return "https://github.com/{$this->github_repo}/releases/download/v{$version}/wp-url-manager-{$version}.zip";
     }
 
     private function get_tested_version() {

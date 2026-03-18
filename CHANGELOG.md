@@ -102,6 +102,41 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
 ---
 
+## [1.0.3] - 2026-03-18
+
+### 🐛 Corrections critiques
+
+**1. Mise à jour automatique corrigée**
+- L'URL de téléchargement utilise maintenant le ZIP de release attaché via l'API GitHub
+- Fallback sur l'URL de release si l'API échoue
+- Téléchargement du bon fichier ZIP au lieu du code source
+
+**2. Interface utilisateur refaite**
+- Formulaire intégré dans la page principale (plus de popup)
+- Sidebar avec placeholders toujours visible pendant l'édition
+- Navigation fluide entre liste et formulaire
+- Meilleure UX pour voir les shortcodes en temps réel
+
+**3. Redirection 301 corrigée**
+- Génération des rewrite rules améliorée pour éviter les 404
+- Capture correcte de tous les placeholders dans l'ordre
+- Meilleure gestion des index de correspondance regex
+
+### ✨ Améliorations UX
+
+- Formulaire intégré au lieu de modale popup
+- Sidebar aide toujours visible
+- Validation en temps réel avec aperçu d'URL
+- Notifications toast modernes
+- Boutons "Retour à la liste" pour navigation intuitive
+
+### 🔧 Technique
+
+- `get_download_url()` : Utilise l'API GitHub releases pour récupérer le bon asset ZIP
+- `pattern_to_query()` : Parcourt tous les placeholders pour générer les bons index
+- Nouveaux fichiers : `admin-style-v2.css`, `admin-script-v2.js`
+- Nouvelle vue : `main-page.php` refaite avec système de vues (liste/formulaire)
+
 ## [1.0.2] - 2026-03-17
 
 ### ⚡ Améliorations

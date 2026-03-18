@@ -63,13 +63,19 @@ class WP_URL_Manager_Rewrite_Manager {
     private function pattern_to_query($pattern, $post_type) {
         $query_parts = array();
         $match_index = 1;
-
-        if (strpos($pattern, '%postname%') !== false) {
-            $query_parts[] = 'name=$matches[' . $match_index . ']';
-            $match_index++;
-        } elseif (strpos($pattern, '%post_id%') !== false) {
-            $query_parts[] = 'p=$matches[' . $match_index . ']';
-            $match_index++;
+        
+        $parts = explode('/', trim($pattern, '/'));
+        
+        foreach ($parts as $part) {
+            if ($part === '%postname%') {
+                $query_parts[] = 'name=$matches[' . $match_index . ']';
+                $match_index++;
+            } elseif ($part === '%post_id%') {
+                $query_parts[] = 'p=$matches[' . $match_index . ']';
+                $match_index++;
+            } elseif (preg_match('/%[a-z_]+%|\{taxonomy:[a-z_]+\}/', $part)) {
+                $match_index++;
+            }
         }
 
         $query_parts[] = 'post_type=' . $post_type;
