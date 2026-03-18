@@ -102,6 +102,63 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
 ---
 
+## [1.0.5] - 2026-03-18
+
+### 🐛 Correction DÉFINITIVE - Redirection 301
+
+**Problème persistant :** Les redirections 301 ne fonctionnaient toujours pas malgré v1.0.4
+
+**Analyse de la cause racine :**
+- WordPress résout `/test/` via sa rewrite rule native AVANT notre hook
+- Le hook `init` ne peut pas intercepter car WordPress n'a pas encore chargé le post
+- Le hook `parse_request` arrive trop tard, WordPress a déjà décidé d'afficher le post
+- **Solution précédente était incorrecte**
+
+**Vraie solution implémentée :**
+1. **Simplification radicale** : Suppression de tous les hooks inutiles (`init`, `parse_request`)
+2. **Un seul hook** : `template_redirect` (priorité 1)
+3. **Logique simple** :
+   - WordPress charge le post via son URL native (`/test/`)
+   - Notre hook compare l'URL actuelle avec l'URL cible attendue (`/articles/test/`)
+   - Si différent → redirection 301
+   - Si identique → affichage normal
+
+**Code simplifié :**
+```php
+public function handle_redirects() {
+    // WordPress a déjà chargé le post
+    global $post;
+    
+    // Récupérer l'URL cible attendue pour ce post
+    $target_url = $this->build_target_url($post, $rule['target_pattern']);
+    
+    // Comparer avec l'URL actuelle
+    if ($current_path !== $target_path) {
+        wp_safe_redirect($target_url, 301); // Redirection
+        exit;
+    }
+    // Sinon, WordPress affiche le post normalement
+}
+```
+
+### 🔧 Technique
+
+- Suppression de `check_legacy_urls_early()` et `check_legacy_urls()`
+- Suppression de `should_redirect()`, `perform_redirect()`, `match_legacy_url()`
+- Suppression de `build_source_url()`, `would_create_loop()`, `pattern_to_regex()`, `get_placeholder_index()`
+- **Code réduit de 150 lignes** → Plus simple, plus robuste
+- Un seul point d'entrée : `template_redirect`
+
+### ✅ Pourquoi ça va fonctionner cette fois
+
+1. WordPress charge `/test/` → trouve le post → pas de 404
+2. `template_redirect` s'exécute avec `$post` disponible
+3. On calcule l'URL cible : `/articles/test/`
+4. On compare : `/test/` ≠ `/articles/test/` → **Redirection 301**
+5. WordPress recharge `/articles/test/`
+6. Notre rewrite rule capture `/articles/test/` → charge le post
+7. On compare : `/articles/test/` = `/articles/test/` → **Affichage**
+
 ## [1.0.4] - 2026-03-18
 
 ### 🐛 Correction CRITIQUE - Redirection 301
