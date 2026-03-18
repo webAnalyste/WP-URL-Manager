@@ -69,11 +69,31 @@ class WP_URL_Manager_Debug_Helper {
         
         echo '<h2>WordPress Rewrite Rules</h2>';
         echo '<p><em>Recherchez votre pattern (ex: "articles") dans la liste ci-dessous</em></p>';
+        
+        $search_term = '';
+        if (isset($_POST['search_rules']) && check_admin_referer('wp_url_manager_debug')) {
+            $search_term = sanitize_text_field($_POST['search_term']);
+        }
+        
+        echo '<form method="post" style="margin-bottom: 10px;">';
+        wp_nonce_field('wp_url_manager_debug');
+        echo '<input type="text" name="search_term" placeholder="Filtrer (ex: articles)" value="' . esc_attr($search_term) . '" style="width: 300px;" />';
+        echo '<button type="submit" name="search_rules" class="button">Filtrer</button>';
+        echo '</form>';
+        
         echo '<pre style="background: #f5f5f5; padding: 15px; overflow: auto; max-height: 400px;">';
         if (!empty($wp_rewrite->rules)) {
+            $count = 0;
             foreach ($wp_rewrite->rules as $regex => $query) {
-                echo esc_html($regex) . ' => ' . esc_html($query) . "\n";
+                if (empty($search_term) || stripos($regex, $search_term) !== false || stripos($query, $search_term) !== false) {
+                    echo esc_html($regex) . ' => ' . esc_html($query) . "\n";
+                    $count++;
+                }
             }
+            if ($count === 0 && !empty($search_term)) {
+                echo "Aucune règle trouvée pour '{$search_term}'";
+            }
+            echo "\n<strong>Total: " . count($wp_rewrite->rules) . " règles" . ($search_term ? " ({$count} affichées)" : "") . "</strong>";
         } else {
             echo 'Aucune rewrite rule trouvée';
         }

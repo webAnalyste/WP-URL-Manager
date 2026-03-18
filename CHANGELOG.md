@@ -102,6 +102,47 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
 ---
 
+## [1.0.8] - 2026-03-18
+
+### 🔍 Diagnostic approfondi - Rewrite Rules
+
+**Problème confirmé :** Les rewrite rules ne sont PAS enregistrées dans WordPress (URL `/articles/...` non trouvée)
+
+**Ajouts pour diagnostic :**
+1. **Logs ultra-détaillés** (si WP_DEBUG activé) :
+   - Nombre de règles actives trouvées
+   - Pattern, regex et query générés pour chaque règle
+   - Confirmation si `add_rewrite_rule()` est appelé
+   - Vérification immédiate si la règle apparaît dans `$wp_rewrite->rules`
+   - Logs de flush des rewrite rules
+
+2. **Page Debug améliorée** :
+   - Filtre de recherche dans les rewrite rules
+   - Compteur total de règles
+   - Affichage du nombre de règles filtrées
+
+### 📋 Instructions de diagnostic
+
+1. **Activer WP_DEBUG** dans `wp-config.php` :
+   ```php
+   define('WP_DEBUG', true);
+   define('WP_DEBUG_LOG', true);
+   ```
+
+2. **Installer v1.0.8**
+
+3. **Créer/modifier une règle** pour déclencher les logs
+
+4. **Consulter `wp-content/debug.log`** et chercher :
+   - `WP URL Manager: Starting add_rewrite_rules()`
+   - `WP URL Manager: Generated - Regex:`
+   - `WP URL Manager: ✅ add_rewrite_rule() called successfully`
+   - `WP URL Manager: ✅ Rule confirmed` OU `❌ Rule NOT found`
+
+5. **Aller dans Debug** et filtrer par "articles"
+
+6. **Me communiquer les logs** pour identifier le problème exact
+
 ## [1.0.7] - 2026-03-18
 
 ### 🔧 Amélioration
