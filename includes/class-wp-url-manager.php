@@ -29,11 +29,12 @@ class WP_URL_Manager {
 
     private function load_dependencies() {
         require_once WP_URL_MANAGER_PLUGIN_DIR . 'includes/class-rules-manager.php';
+        require_once WP_URL_MANAGER_PLUGIN_DIR . 'includes/class-pattern-validator.php';
+        require_once WP_URL_MANAGER_PLUGIN_DIR . 'includes/class-placeholder-resolver.php';
         require_once WP_URL_MANAGER_PLUGIN_DIR . 'includes/class-permalink-manager.php';
         require_once WP_URL_MANAGER_PLUGIN_DIR . 'includes/class-rewrite-manager.php';
         require_once WP_URL_MANAGER_PLUGIN_DIR . 'includes/class-redirect-manager.php';
-        require_once WP_URL_MANAGER_PLUGIN_DIR . 'includes/class-placeholder-resolver.php';
-        require_once WP_URL_MANAGER_PLUGIN_DIR . 'includes/class-pattern-validator.php';
+        require_once WP_URL_MANAGER_PLUGIN_DIR . 'includes/class-debug-helper.php';
         require_once WP_URL_MANAGER_PLUGIN_DIR . 'includes/class-updater.php';
         
         if (is_admin()) {

@@ -11,6 +11,8 @@ Plugin WordPress de gestion des structures d'URL et redirections 301 par type de
 
 **WP URL Manager** est un plugin WordPress léger et autonome qui permet de définir des structures d'URL personnalisées par type de contenu, de générer automatiquement les permaliens correspondants et de gérer les redirections 301 depuis les anciennes URLs.
 
+Développé par [webAnalyste](https://www.webanalyste.com), agence experte en Analytics, Data, Automatisation et IA, ce plugin fait partie d'une suite d'outils WordPress conçus pour optimiser la performance digitale des entreprises. Pour aller plus loin dans la maîtrise de ces technologies, découvrez nos [formations spécialisées en Analytics, Data et IA](https://www.formations-analytics.com).
+
 ### Pourquoi ce plugin ?
 
 - ✅ **Contrôle total** sur vos structures d'URL

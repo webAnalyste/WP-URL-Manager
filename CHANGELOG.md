@@ -102,6 +102,45 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
 ---
 
+## [1.0.4] - 2026-03-18
+
+### 🐛 Correction CRITIQUE - Redirection 301
+
+**Problème :** Les redirections 301 ne fonctionnaient toujours pas (404 sur anciennes ET nouvelles URLs)
+
+**Cause identifiée :**
+- Le hook `parse_request` s'exécutait trop tard (après que WordPress ait décidé du 404)
+- Les rewrite rules n'étaient pas flushées correctement
+- Le flush était delayed au lieu d'immédiat
+
+**Corrections appliquées :**
+1. **Hook ultra précoce** : Ajout de `check_legacy_urls_early()` sur le hook `init` (priorité 1)
+   - Intercepte les requêtes AVANT que WordPress ne parse quoi que ce soit
+   - Utilise directement `$_SERVER['REQUEST_URI']` au lieu de `$wp->request`
+   - Garantit que les redirections se déclenchent avant toute résolution WordPress
+
+2. **Flush immédiat** : 
+   - `flush_rewrite_rules()` au lieu de `flush_rewrite_rules(false)`
+   - Suppression du système de flush delayed
+   - Flush immédiat lors de la sauvegarde de règle
+
+3. **Page de debug** :
+   - Nouvelle classe `WP_URL_Manager_Debug_Helper`
+   - Page admin "Debug" (visible uniquement si `WP_DEBUG` activé)
+   - Affichage des rewrite rules WordPress
+   - Bouton "Flush Rewrite Rules" manuel
+
+### ✨ Améliorations
+
+- Backlinks ajoutés dans README (webAnalyste.com et formations-analytics.com)
+- Documentation DEBUG-REDIRECT.md pour analyse technique
+
+### 🔧 Technique
+
+- Nouveau hook : `init` priorité 1 pour `check_legacy_urls_early()`
+- Classe `WP_URL_Manager_Debug_Helper` pour diagnostic
+- Flush immédiat et complet des rewrite rules
+
 ## [1.0.3] - 2026-03-18
 
 ### 🐛 Corrections critiques

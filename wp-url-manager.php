@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('WP_URL_MANAGER_VERSION', '1.0.3');
+define('WP_URL_MANAGER_VERSION', '1.0.4');
 define('WP_URL_MANAGER_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WP_URL_MANAGER_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WP_URL_MANAGER_PLUGIN_FILE', __FILE__);

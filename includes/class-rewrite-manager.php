@@ -84,12 +84,10 @@ class WP_URL_Manager_Rewrite_Manager {
     }
 
     public function schedule_rewrite_flush() {
-        if (!wp_next_scheduled('wp_url_manager_flush_rewrite')) {
-            wp_schedule_single_event(time() + 5, 'wp_url_manager_flush_rewrite');
-        }
+        flush_rewrite_rules();
     }
 
     public function flush_rewrite_rules_delayed() {
-        flush_rewrite_rules(false);
+        flush_rewrite_rules();
     }
 }
