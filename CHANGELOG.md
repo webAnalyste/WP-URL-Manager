@@ -5,6 +5,38 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.2.0] - 2026-03-18
+
+### 🔥 CORRECTION MAJEURE - Redirection 301 ENFIN FONCTIONNELLE
+
+**Problème identifié :** La logique de redirection ne pouvait PAS fonctionner pour les anciennes URLs
+
+**Pourquoi ça ne marchait pas :**
+1. Utilisateur accède à `/test/` (ancienne URL)
+2. WordPress cherche l'article à `/test/` mais le permalink a été changé en `/articles/test/`
+3. WordPress ne trouve rien → **404**
+4. `handle_redirects()` s'exécute mais vérifie `is_404()` → **sortie immédiate, pas de redirection !**
+
+**Solution implémentée :**
+- Ajout du hook `parse_request` (s'exécute AVANT la détection 404)
+- Nouvelle méthode `check_legacy_url()` qui :
+  1. Récupère l'URL demandée (même si 404)
+  2. Extrait le slug avec le pattern source
+  3. Cherche le post correspondant dans la DB avec `get_posts()`
+  4. Construit l'URL cible avec le pattern cible
+  5. Redirige 301 si l'URL actuelle ≠ URL cible
+- Logs détaillés pour tracer l'exécution
+
+**Changements techniques :**
+- `check_legacy_url($wp)` : Intercepte les requêtes AVANT 404
+- `find_post_by_legacy_url()` : Trouve le post même si l'URL est obsolète
+- `extract_slug_from_url()` : Extrait le slug depuis l'URL avec regex
+- Suppression de la vérification `is_404()` qui bloquait les redirections
+
+**Résultat attendu :**
+- `/test/` → Redirection 301 vers `/articles/test/` ✅
+- `/articles/test/` → Affichage de l'article (pas de redirection) ✅
+
 ## [1.0.0] - 2026-03-17
 
 ### Ajouté

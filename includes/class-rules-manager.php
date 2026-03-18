@@ -83,12 +83,12 @@ class WP_URL_Manager_Rules_Manager {
 
     private function sanitize_rule($rule_data) {
         return array(
-            'active' => !empty($rule_data['active']),
+            'active' => !empty($rule_data['active']) ? 1 : 0,
             'label' => sanitize_text_field($rule_data['label'] ?? ''),
             'post_type' => sanitize_key($rule_data['post_type'] ?? 'post'),
             'source_pattern' => sanitize_text_field($rule_data['source_pattern'] ?? ''),
             'target_pattern' => sanitize_text_field($rule_data['target_pattern'] ?? ''),
-            'redirect_301' => !empty($rule_data['redirect_301']),
+            'redirect_301' => !empty($rule_data['redirect_301']) ? 1 : 0,
         );
     }
 

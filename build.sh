@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="1.0.9"
+VERSION="1.2.0"
 PLUGIN_SLUG="wp-url-manager"
 BUILD_DIR="build"
 DIST_DIR="dist"

@@ -144,12 +144,12 @@ class WP_URL_Manager_Admin_Interface {
 
         $rule_id = isset($_POST['rule_id']) ? sanitize_text_field($_POST['rule_id']) : '';
         $rule_data = array(
-            'active' => isset($_POST['active']) && $_POST['active'] === 'true',
+            'active' => (isset($_POST['active']) && $_POST['active'] === 'true') ? 1 : 0,
             'label' => sanitize_text_field($_POST['label'] ?? ''),
             'post_type' => sanitize_key($_POST['post_type'] ?? 'post'),
             'source_pattern' => sanitize_text_field($_POST['source_pattern'] ?? ''),
             'target_pattern' => sanitize_text_field($_POST['target_pattern'] ?? ''),
-            'redirect_301' => isset($_POST['redirect_301']) && $_POST['redirect_301'] === 'true',
+            'redirect_301' => (isset($_POST['redirect_301']) && $_POST['redirect_301'] === 'true') ? 1 : 0,
         );
 
         $validation = WP_URL_Manager_Pattern_Validator::validate_pattern(
