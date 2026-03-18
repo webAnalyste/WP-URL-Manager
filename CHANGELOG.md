@@ -102,7 +102,26 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
 ---
 
-## [1.0.8] - 2026-03-18
+## [1.0.9] - 2026-03-18
+
+### 🐛 HOTFIX CRITIQUE - Erreur fatale v1.0.8
+
+**Problème :** v1.0.8 causait une erreur critique "Il y a eu une erreur critique sur ce site"
+
+**Cause :** Accès à `$wp_rewrite->rules` sans vérifier son existence
+- `count($wp_rewrite->rules)` sur NULL génère une erreur en PHP 8+
+- `isset($wp_rewrite->rules[$regex])` sur NULL peut causer une erreur
+
+**Correction :**
+- Ajout de `isset($wp_rewrite->rules) && is_array($wp_rewrite->rules)` avant tout accès
+- Logs alternatifs si `$wp_rewrite->rules` n'est pas initialisé
+
+**⚠️ IMPORTANT :** Si vous avez installé v1.0.8 et que votre site est cassé :
+1. Désactiver le plugin via FTP/SSH : renommer le dossier `wp-content/plugins/wp-url-manager`
+2. Installer v1.0.9
+3. Réactiver le plugin
+
+## [1.0.8] - 2026-03-18 ❌ VERSION CASSÉE - NE PAS UTILISER
 
 ### 🔍 Diagnostic approfondi - Rewrite Rules
 
