@@ -3,7 +3,7 @@
  * Plugin Name: WP URL Manager
  * Plugin URI: https://github.com/webAnalyste/WP-URL-Manager
  * Description: Plugin WordPress de gestion des structures d'URL et redirections 301 par type de contenu
- * Version: 1.0.3
+ * Version: 1.0.5
  * Author: webAnalyste
  * Author URI: https://github.com/webAnalyste
  * License: GPL v2 or later
