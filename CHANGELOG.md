@@ -5,6 +5,28 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.1.2] - 2026-03-19
+
+### ⚡ OPTIMISATION - Performances et logs
+
+**Redirection 301 confirmée fonctionnelle !** 🎉
+
+**Optimisations :**
+- Exclusion des requêtes wp-json, wp-admin, wp-content pour éviter les vérifications inutiles
+- Réduction drastique des logs (suppression des logs "Cannot verify" et logs répétitifs)
+- Logs uniquement pour les redirections réelles et les règles ajoutées
+- Amélioration des performances globales
+
+**Logs optimisés :**
+- ✅ Rewrite rule added (au lieu de 5 lignes de logs)
+- ✅ Redirecting 301 (uniquement quand redirection effectuée)
+- ✅ Rewrite rules flushed (au lieu de 2 lignes)
+
+**Résultat :**
+- Moins de spam dans debug.log
+- Meilleures performances (moins de vérifications)
+- Logs plus clairs et utiles
+
 ## [1.1.1] - 2026-03-18
 
 ### 🔥 CORRECTION MAJEURE - Redirection 301 ENFIN FONCTIONNELLE

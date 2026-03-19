@@ -29,8 +29,12 @@ class WP_URL_Manager_Redirect_Manager {
             return;
         }
 
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log("WP URL Manager: check_legacy_url() - Request path: {$request_path}");
+        // Exclure les requêtes API REST, admin, uploads, etc.
+        $excluded_paths = array('wp-json', 'wp-admin', 'wp-content', 'wp-includes', 'xmlrpc.php');
+        foreach ($excluded_paths as $excluded) {
+            if (strpos($request_path, $excluded) === 0) {
+                return;
+            }
         }
 
         $rules = $this->rules_manager->get_active_rules();

@@ -21,8 +21,9 @@ class WP_URL_Manager_Rewrite_Manager {
     public function add_rewrite_rules() {
         $rules = $this->rules_manager->get_active_rules();
 
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('WP URL Manager: Starting add_rewrite_rules() - Found ' . count($rules) . ' active rules');
+        // Log uniquement si des règles actives existent
+        if (defined('WP_DEBUG') && WP_DEBUG && count($rules) > 0) {
+            error_log('WP URL Manager: add_rewrite_rules() - Processing ' . count($rules) . ' active rule(s)');
         }
 
         foreach ($rules as $rule) {
@@ -36,14 +37,7 @@ class WP_URL_Manager_Rewrite_Manager {
             $this->add_rule_rewrite($rule);
         }
         
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            global $wp_rewrite;
-            if (isset($wp_rewrite->rules) && is_array($wp_rewrite->rules)) {
-                error_log('WP URL Manager: Finished add_rewrite_rules() - Total WP rules: ' . count($wp_rewrite->rules));
-            } else {
-                error_log('WP URL Manager: Finished add_rewrite_rules() - $wp_rewrite->rules not initialized');
-            }
-        }
+        // Logs réduits pour éviter le spam
     }
 
     private function add_rule_rewrite($rule) {
@@ -53,31 +47,11 @@ class WP_URL_Manager_Rewrite_Manager {
         $regex = $this->pattern_to_regex($pattern);
         $query = $this->pattern_to_query($pattern, $post_type);
 
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log("WP URL Manager: Processing rule - Pattern: {$pattern}, Post Type: {$post_type}");
-            error_log("WP URL Manager: Generated - Regex: {$regex}, Query: {$query}");
-        }
-
         if ($regex && $query) {
             add_rewrite_rule($regex, $query, 'top');
             
             if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log("WP URL Manager: ✅ add_rewrite_rule() called successfully");
-                
-                global $wp_rewrite;
-                if (isset($wp_rewrite->rules) && is_array($wp_rewrite->rules)) {
-                    if (isset($wp_rewrite->rules[$regex])) {
-                        error_log("WP URL Manager: ✅ Rule confirmed in \$wp_rewrite->rules");
-                    } else {
-                        error_log("WP URL Manager: ❌ Rule NOT found in \$wp_rewrite->rules immediately after add");
-                    }
-                } else {
-                    error_log("WP URL Manager: ⚠️ Cannot verify - \$wp_rewrite->rules not initialized");
-                }
-            }
-        } else {
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log("WP URL Manager: ❌ Skipped - Invalid regex or query");
+                error_log("WP URL Manager: ✅ Rewrite rule added - {$regex} => {$query}");
             }
         }
     }
@@ -124,12 +98,9 @@ class WP_URL_Manager_Rewrite_Manager {
     }
 
     public function schedule_rewrite_flush() {
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('WP URL Manager: schedule_rewrite_flush() called - Flushing rewrite rules');
-        }
         flush_rewrite_rules();
         if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('WP URL Manager: Flush complete');
+            error_log('WP URL Manager: ✅ Rewrite rules flushed');
         }
     }
 
