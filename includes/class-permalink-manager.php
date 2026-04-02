@@ -16,6 +16,7 @@ class WP_URL_Manager_Permalink_Manager {
     private function init_hooks() {
         add_filter('post_link', array($this, 'filter_post_link'), 10, 2);
         add_filter('post_type_link', array($this, 'filter_post_type_link'), 10, 2);
+        add_filter('get_canonical_url', array($this, 'filter_canonical_url'), 10, 2);
     }
 
     public function filter_post_link($permalink, $post) {
@@ -32,6 +33,14 @@ class WP_URL_Manager_Permalink_Manager {
         }
 
         return $this->generate_permalink($post, $permalink);
+    }
+
+    public function filter_canonical_url($canonical_url, $post) {
+        if (!$post || is_wp_error($post)) {
+            return $canonical_url;
+        }
+
+        return $this->generate_permalink($post, $canonical_url);
     }
 
     private function generate_permalink($post, $default_permalink) {

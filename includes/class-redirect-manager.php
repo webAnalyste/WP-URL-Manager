@@ -38,6 +38,8 @@ class WP_URL_Manager_Redirect_Manager {
         }
 
         $rules = $this->rules_manager->get_active_rules();
+        $matched_source_pattern = false;
+        $debug_request = $this->should_debug_request_path($request_path);
 
         foreach ($rules as $rule) {
             if (empty($rule['redirect_301'])) {
@@ -50,9 +52,24 @@ class WP_URL_Manager_Redirect_Manager {
                 continue;
             }
 
-            $post = $this->find_post_by_legacy_url($request_path, $source_pattern, $rule['post_type']);
+            $slug = $this->extract_slug_from_url($request_path, $source_pattern);
+
+            if (empty($slug)) {
+                continue;
+            }
+
+            $matched_source_pattern = true;
+
+            if (defined('WP_DEBUG') && WP_DEBUG && $debug_request) {
+                error_log("WP URL Manager: Legacy URL candidate matched source pattern - slug {$slug}, post_type {$rule['post_type']}");
+            }
+
+            $post = $this->find_post_by_slug($slug, $rule['post_type']);
             
             if (!$post) {
+                if (defined('WP_DEBUG') && WP_DEBUG && $debug_request) {
+                    error_log("WP URL Manager: No published {$rule['post_type']} found for slug {$slug}");
+                }
                 continue;
             }
 
@@ -79,6 +96,10 @@ class WP_URL_Manager_Redirect_Manager {
                 wp_safe_redirect($target_url, 301);
                 exit;
             }
+        }
+
+        if (defined('WP_DEBUG') && WP_DEBUG && $debug_request && !$matched_source_pattern) {
+            error_log("WP URL Manager: No source pattern matched request path {$request_path}");
         }
     }
 
@@ -129,17 +150,7 @@ class WP_URL_Manager_Redirect_Manager {
         }
     }
 
-    private function find_post_by_legacy_url($request_path, $source_pattern, $post_type) {
-        $slug = $this->extract_slug_from_url($request_path, $source_pattern);
-        
-        if (empty($slug)) {
-            return null;
-        }
-
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log("WP URL Manager: Extracted slug: {$slug} from {$request_path}");
-        }
-
+    private function find_post_by_slug($slug, $post_type) {
         $args = array(
             'name' => $slug,
             'post_type' => $post_type,
@@ -168,6 +179,10 @@ class WP_URL_Manager_Redirect_Manager {
         }
         
         return null;
+    }
+
+    private function should_debug_request_path($request_path) {
+        return strpos($request_path, '/') === false && strpos($request_path, '.') === false;
     }
 
     private function build_target_url($post, $pattern) {

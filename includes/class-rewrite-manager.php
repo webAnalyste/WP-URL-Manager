@@ -47,6 +47,13 @@ class WP_URL_Manager_Rewrite_Manager {
         $regex = $this->pattern_to_regex($pattern);
         $query = $this->pattern_to_query($pattern, $post_type);
 
+        if (strpos($regex, '%') !== false) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log("WP URL Manager: ❌ Rewrite rule skipped - unresolved placeholder in regex {$regex}");
+            }
+            return;
+        }
+
         if ($regex && $query) {
             add_rewrite_rule($regex, $query, 'top');
             
@@ -60,7 +67,7 @@ class WP_URL_Manager_Rewrite_Manager {
         $pattern = trim($pattern, '/');
         
         $regex = preg_replace('/%postname%/', '([^/]+)', $pattern);
-        $regex = preg_replace('/%post_id%/', '([0-9]+)', $pattern);
+        $regex = preg_replace('/%post_id%/', '([0-9]+)', $regex);
         $regex = preg_replace('/%year%/', '([0-9]{4})', $regex);
         $regex = preg_replace('/%monthnum%/', '([0-9]{1,2})', $regex);
         $regex = preg_replace('/%day%/', '([0-9]{1,2})', $regex);

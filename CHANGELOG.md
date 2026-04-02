@@ -5,6 +5,21 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.1.4] - 2026-04-02
+
+### 🐛 Correctif - Canonical URL
+
+- Ajout du filtre `get_canonical_url` dans `WP_URL_Manager_Permalink_Manager` pour que le `<link rel="canonical">` pointe vers l'URL cible (target pattern) et non l'URL WordPress par défaut.
+
+## [1.1.3] - 2026-03-19
+
+### 🐛 Correctif critique - Regex de rewrite et diagnostic frontend
+
+- Correction d'un bug dans `pattern_to_regex()` qui reconstruisait la regex depuis le pattern brut au lieu de la version déjà transformée.
+- La règle `/articles/%postname%/` génère désormais correctement `^articles/([^/]+)/?$`.
+- Ajout d'une protection pour ignorer toute rewrite rule contenant encore un placeholder non résolu.
+- Ajout de logs ciblés pour distinguer : aucune règle source matchée, slug matché sans post trouvé, et redirection réellement exécutée.
+
 ## [1.1.2] - 2026-03-19
 
 ### ⚡ OPTIMISATION - Performances et logs
