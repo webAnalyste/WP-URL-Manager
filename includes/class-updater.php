@@ -35,6 +35,10 @@ class WP_URL_Manager_Updater {
 
         $remote_version = $this->get_remote_version();
 
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("WP URL Manager [check_update]: local={$this->version} | remote=" . var_export($remote_version, true) . " | plugin_slug={$this->plugin_slug}");
+        }
+
         if ($remote_version && version_compare($this->version, $remote_version, '<')) {
             $plugin_data = array(
                 'slug' => dirname($this->plugin_slug),
@@ -92,6 +96,16 @@ class WP_URL_Manager_Updater {
         return (object) $plugin_info;
     }
 
+    private function github_request($url) {
+        return wp_remote_get($url, array(
+            'timeout' => 15,
+            'headers' => array(
+                'Accept'     => 'application/vnd.github.v3+json',
+                'User-Agent' => 'WordPress/' . get_bloginfo('version') . '; ' . home_url(),
+            ),
+        ));
+    }
+
     private function get_remote_version() {
         $cache = get_transient($this->cache_key);
 
@@ -99,14 +113,8 @@ class WP_URL_Manager_Updater {
             return $cache['version'];
         }
 
-        $response = wp_remote_get(
-            "https://api.github.com/repos/{$this->github_repo}/releases/latest",
-            array(
-                'timeout' => 10,
-                'headers' => array(
-                    'Accept' => 'application/vnd.github.v3+json',
-                ),
-            )
+        $response = $this->github_request(
+            "https://api.github.com/repos/{$this->github_repo}/releases/latest"
         );
 
         if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
@@ -138,14 +146,8 @@ class WP_URL_Manager_Updater {
             return $cache['info'];
         }
 
-        $response = wp_remote_get(
-            "https://api.github.com/repos/{$this->github_repo}/releases/latest",
-            array(
-                'timeout' => 10,
-                'headers' => array(
-                    'Accept' => 'application/vnd.github.v3+json',
-                ),
-            )
+        $response = $this->github_request(
+            "https://api.github.com/repos/{$this->github_repo}/releases/latest"
         );
 
         if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
@@ -158,26 +160,34 @@ class WP_URL_Manager_Updater {
     }
 
     private function get_download_url($version) {
-        $response = wp_remote_get(
-            "https://api.github.com/repos/{$this->github_repo}/releases/tags/v{$version}",
-            array(
-                'timeout' => 10,
-                'headers' => array('Accept' => 'application/vnd.github.v3+json'),
-            )
-        );
+        $cache = get_transient($this->cache_key);
 
-        if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
-            return "https://github.com/{$this->github_repo}/releases/download/v{$version}/wp-url-manager-{$version}.zip";
+        if ($this->cache_allowed && $cache !== false && isset($cache['info'])) {
+            $body = $cache['info'];
+        } else {
+            $response = $this->github_request(
+                "https://api.github.com/repos/{$this->github_repo}/releases/tags/v{$version}"
+            );
+
+            if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+                return "https://github.com/{$this->github_repo}/releases/download/v{$version}/wp-url-manager-{$version}.zip";
+            }
+
+            $body = json_decode(wp_remote_retrieve_body($response), true);
         }
 
-        $body = json_decode(wp_remote_retrieve_body($response), true);
-        
+        // Priorité : asset .zip uploadé
         if (!empty($body['assets']) && is_array($body['assets'])) {
             foreach ($body['assets'] as $asset) {
                 if (isset($asset['name']) && strpos($asset['name'], '.zip') !== false) {
                     return $asset['browser_download_url'];
                 }
             }
+        }
+
+        // Fallback : zipball de la release (archive source GitHub)
+        if (!empty($body['zipball_url'])) {
+            return $body['zipball_url'];
         }
 
         return "https://github.com/{$this->github_repo}/releases/download/v{$version}/wp-url-manager-{$version}.zip";
