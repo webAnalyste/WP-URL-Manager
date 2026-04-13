@@ -10,22 +10,16 @@ class WP_URL_Manager_Updater {
     private $plugin_file;
     private $github_repo;
     private $version;
-    private $cache_key;
-    private $cache_allowed;
 
     public function __construct($plugin_file, $github_repo, $version) {
         $this->plugin_file = $plugin_file;
         $this->plugin_slug = plugin_basename($plugin_file);
         $this->github_repo = $github_repo;
-        $this->version = $version;
-        $this->cache_key = 'wp_url_manager_update_cache';
-        $this->cache_allowed = true;
+        $this->version     = $version;
 
+        add_filter('pre_set_site_transient_update_plugins', array($this, 'check_update'));
         add_filter('plugins_api', array($this, 'plugin_info'), 20, 3);
-        add_filter('site_transient_update_plugins', array($this, 'check_update'));
-        add_action('upgrader_process_complete', array($this, 'purge_cache'), 10, 2);
-        add_action('admin_init', array($this, 'force_check_on_plugins_page'));
-        add_action('load-plugins.php', array($this, 'maybe_force_check'));
+        add_filter('upgrader_post_install', array($this, 'after_install'), 10, 3);
     }
 
     public function check_update($transient) {
@@ -35,222 +29,133 @@ class WP_URL_Manager_Updater {
 
         $remote_version = $this->get_remote_version();
 
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log("WP URL Manager [check_update]: local={$this->version} | remote=" . var_export($remote_version, true) . " | plugin_slug={$this->plugin_slug}");
-        }
-
         if ($remote_version && version_compare($this->version, $remote_version, '<')) {
-            $plugin_data = array(
-                'slug' => dirname($this->plugin_slug),
-                'plugin' => $this->plugin_slug,
-                'new_version' => $remote_version,
-                'url' => "https://github.com/{$this->github_repo}",
-                'package' => $this->get_download_url($remote_version),
-                'tested' => $this->get_tested_version(),
+            $transient->response[$this->plugin_slug] = (object) array(
+                'slug'         => dirname($this->plugin_slug),
+                'plugin'       => $this->plugin_slug,
+                'new_version'  => $remote_version,
+                'url'          => "https://github.com/{$this->github_repo}",
+                'package'      => "https://github.com/{$this->github_repo}/releases/download/v{$remote_version}/wp-url-manager-{$remote_version}.zip",
+                'tested'       => '6.7',
                 'requires_php' => '7.4',
-                'compatibility' => new stdClass(),
             );
-
-            $transient->response[$this->plugin_slug] = (object) $plugin_data;
         }
 
         return $transient;
     }
 
-    public function plugin_info($false, $action, $response) {
+    public function plugin_info($false, $action, $args) {
         if ($action !== 'plugin_information') {
             return $false;
         }
 
-        if (empty($response->slug) || $response->slug !== dirname($this->plugin_slug)) {
+        if (!isset($args->slug) || $args->slug !== dirname($this->plugin_slug)) {
             return $false;
         }
 
         $remote_version = $this->get_remote_version();
-        $remote_info = $this->get_remote_info();
 
-        if (!$remote_version || !$remote_info) {
-            return $false;
-        }
-
-        $plugin_info = array(
-            'name' => 'WP URL Manager',
-            'slug' => dirname($this->plugin_slug),
-            'version' => $remote_version,
-            'author' => '<a href="https://github.com/webAnalyste">webAnalyste</a>',
-            'author_profile' => 'https://github.com/webAnalyste',
-            'homepage' => "https://github.com/{$this->github_repo}",
-            'requires' => '5.8',
-            'tested' => $this->get_tested_version(),
-            'requires_php' => '7.4',
-            'download_link' => $this->get_download_url($remote_version),
-            'sections' => array(
-                'description' => $this->get_description(),
-                'installation' => $this->get_installation(),
-                'changelog' => $this->get_changelog($remote_info),
+        return (object) array(
+            'name'          => 'WP URL Manager',
+            'slug'          => dirname($this->plugin_slug),
+            'version'       => $remote_version,
+            'author'        => '<a href="https://www.webanalyste.com">webAnalyste</a>',
+            'homepage'      => "https://github.com/{$this->github_repo}",
+            'requires'      => '5.8',
+            'tested'        => '6.7',
+            'requires_php'  => '7.4',
+            'download_link' => "https://github.com/{$this->github_repo}/releases/download/v{$remote_version}/wp-url-manager-{$remote_version}.zip",
+            'sections'      => array(
+                'description' => $this->get_readme(),
+                'changelog'   => $this->get_changelog(),
             ),
-            'banners' => array(),
-            'external' => true,
         );
-
-        return (object) $plugin_info;
     }
 
-    private function github_request($url) {
-        return wp_remote_get($url, array(
-            'timeout' => 15,
-            'headers' => array(
-                'Accept'     => 'application/vnd.github.v3+json',
-                'User-Agent' => 'WordPress/' . get_bloginfo('version') . '; ' . home_url(),
-            ),
-        ));
+    public function after_install($response, $hook_extra, $result) {
+        if (!isset($hook_extra['plugin']) || $hook_extra['plugin'] !== $this->plugin_slug) {
+            return $result;
+        }
+
+        global $wp_filesystem;
+
+        $install_directory = plugin_dir_path($this->plugin_file);
+
+        if (realpath($result['destination']) !== realpath($install_directory)) {
+            if ($wp_filesystem->exists($install_directory)) {
+                $wp_filesystem->delete($install_directory, true);
+            }
+            $wp_filesystem->move($result['destination'], $install_directory);
+            $result['destination'] = $install_directory;
+        }
+
+        return $result;
     }
 
     private function get_remote_version() {
-        $cache = get_transient($this->cache_key);
-
-        if ($this->cache_allowed && $cache !== false && isset($cache['version'])) {
-            return $cache['version'];
-        }
-
-        $response = $this->github_request(
-            "https://api.github.com/repos/{$this->github_repo}/releases/latest"
+        $response = wp_remote_get(
+            "https://api.github.com/repos/{$this->github_repo}/releases/latest",
+            array(
+                'timeout'    => 10,
+                'user-agent' => 'WordPress/' . get_bloginfo('version') . '; ' . get_bloginfo('url'),
+                'headers'    => array('Accept' => 'application/vnd.github.v3+json'),
+            )
         );
 
         if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
-            return false;
+            return null;
         }
 
-        $body = json_decode(wp_remote_retrieve_body($response), true);
+        $data = json_decode(wp_remote_retrieve_body($response), true);
 
-        if (empty($body['tag_name'])) {
-            return false;
-        }
-
-        $version = ltrim($body['tag_name'], 'v');
-
-        $cache_data = array(
-            'version' => $version,
-            'info' => $body,
-        );
-
-        set_transient($this->cache_key, $cache_data, 1 * HOUR_IN_SECONDS);
-
-        return $version;
+        return isset($data['tag_name']) ? ltrim($data['tag_name'], 'v') : null;
     }
 
-    private function get_remote_info() {
-        $cache = get_transient($this->cache_key);
-
-        if ($this->cache_allowed && $cache !== false && isset($cache['info'])) {
-            return $cache['info'];
-        }
-
-        $response = $this->github_request(
-            "https://api.github.com/repos/{$this->github_repo}/releases/latest"
+    private function get_readme() {
+        $response = wp_remote_get(
+            "https://raw.githubusercontent.com/{$this->github_repo}/main/README.md",
+            array(
+                'timeout'    => 10,
+                'user-agent' => 'WordPress/' . get_bloginfo('version') . '; ' . get_bloginfo('url'),
+            )
         );
 
         if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
-            return false;
+            return 'Voir la documentation sur <a href="https://github.com/' . esc_attr($this->github_repo) . '" target="_blank">GitHub</a>.';
         }
 
-        $body = json_decode(wp_remote_retrieve_body($response), true);
-
-        return $body;
+        return $this->markdown_to_html(wp_remote_retrieve_body($response));
     }
 
-    private function get_download_url($version) {
-        $cache = get_transient($this->cache_key);
+    private function get_changelog() {
+        $response = wp_remote_get(
+            "https://raw.githubusercontent.com/{$this->github_repo}/main/CHANGELOG.md",
+            array(
+                'timeout'    => 10,
+                'user-agent' => 'WordPress/' . get_bloginfo('version') . '; ' . get_bloginfo('url'),
+            )
+        );
 
-        if ($this->cache_allowed && $cache !== false && isset($cache['info'])) {
-            $body = $cache['info'];
-        } else {
-            $response = $this->github_request(
-                "https://api.github.com/repos/{$this->github_repo}/releases/tags/v{$version}"
-            );
-
-            if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
-                return "https://github.com/{$this->github_repo}/releases/download/v{$version}/wp-url-manager-{$version}.zip";
-            }
-
-            $body = json_decode(wp_remote_retrieve_body($response), true);
+        if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+            return 'Voir le changelog sur <a href="https://github.com/' . esc_attr($this->github_repo) . '/blob/main/CHANGELOG.md" target="_blank">GitHub</a>.';
         }
 
-        // Priorité : asset .zip uploadé
-        if (!empty($body['assets']) && is_array($body['assets'])) {
-            foreach ($body['assets'] as $asset) {
-                if (isset($asset['name']) && strpos($asset['name'], '.zip') !== false) {
-                    return $asset['browser_download_url'];
-                }
-            }
-        }
-
-        // Fallback : zipball de la release (archive source GitHub)
-        if (!empty($body['zipball_url'])) {
-            return $body['zipball_url'];
-        }
-
-        return "https://github.com/{$this->github_repo}/releases/download/v{$version}/wp-url-manager-{$version}.zip";
+        return nl2br(esc_html(wp_remote_retrieve_body($response)));
     }
 
-    private function get_tested_version() {
-        global $wp_version;
-        return $wp_version;
-    }
+    private function markdown_to_html($md) {
+        $md = preg_replace('/^### (.+)$/m', '<h4>$1</h4>', $md);
+        $md = preg_replace('/^## (.+)$/m', '<h3>$1</h3>', $md);
+        $md = preg_replace('/^# (.+)$/m', '<h2>$1</h2>', $md);
+        $md = preg_replace('/\*\*(.+?)\*\*/', '<strong>$1</strong>', $md);
+        $md = preg_replace('/\*(.+?)\*/', '<em>$1</em>', $md);
+        $md = preg_replace('/`([^`\n]+)`/', '<code>$1</code>', $md);
+        $md = preg_replace('/```[\w]*\n(.*?)```/s', '<pre><code>$1</code></pre>', $md);
+        $md = preg_replace('/\[([^\]]+)\]\(([^)]+)\)/', '<a href="$2" target="_blank">$1</a>', $md);
+        $md = preg_replace('/^- (.+)$/m', '<li>$1</li>', $md);
+        $md = preg_replace('/(<li>.*<\/li>)/s', '<ul>$1</ul>', $md);
+        $md = preg_replace('/\n{2,}/', '</p><p>', $md);
 
-    private function get_description() {
-        return '<p><strong>WP URL Manager</strong> est un plugin WordPress de gestion des structures d\'URL et redirections 301 par type de contenu.</p>
-        <h3>Fonctionnalités principales</h3>
-        <ul>
-            <li>✅ Définir des structures d\'URL personnalisées par type de contenu</li>
-            <li>✅ Support des placeholders dynamiques (%postname%, %year%, {taxonomy:xxx}, etc.)</li>
-            <li>✅ Génération automatique des permaliens</li>
-            <li>✅ Redirections 301 intelligentes</li>
-            <li>✅ Interface d\'administration moderne et intuitive</li>
-            <li>✅ Validation en temps réel des patterns</li>
-            <li>✅ Aucune dépendance tierce</li>
-        </ul>';
-    }
-
-    private function get_installation() {
-        return '<ol>
-            <li>Téléchargez et installez le plugin</li>
-            <li>Activez le plugin depuis l\'administration WordPress</li>
-            <li>Accédez à <strong>URL Manager</strong> dans le menu admin</li>
-            <li>Créez votre première règle d\'URL</li>
-        </ol>';
-    }
-
-    private function get_changelog($remote_info) {
-        if (empty($remote_info['body'])) {
-            return '<p>Aucun changelog disponible.</p>';
-        }
-
-        return '<pre>' . esc_html($remote_info['body']) . '</pre>';
-    }
-
-    public function purge_cache($upgrader, $options) {
-        if ($options['action'] === 'update' && $options['type'] === 'plugin') {
-            delete_transient($this->cache_key);
-        }
-    }
-
-    public function force_check_on_plugins_page() {
-        if (isset($_GET['force-check']) && $_GET['force-check'] === 'wp-url-manager') {
-            delete_transient($this->cache_key);
-            delete_site_transient('update_plugins');
-            wp_redirect(admin_url('plugins.php?force-check-done=1'));
-            exit;
-        }
-    }
-
-    public function maybe_force_check() {
-        $screen = get_current_screen();
-        if ($screen && $screen->id === 'plugins') {
-            $cache = get_transient($this->cache_key);
-            if ($cache === false) {
-                delete_site_transient('update_plugins');
-            }
-        }
+        return '<p>' . trim($md) . '</p>';
     }
 }
