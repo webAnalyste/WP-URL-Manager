@@ -42,8 +42,7 @@ composer.lock
 *~
 
 # Build
-/dist/
 /build/
 
 # Distribution
-*.zip
+
