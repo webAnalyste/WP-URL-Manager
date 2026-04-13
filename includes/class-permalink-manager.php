@@ -17,6 +17,8 @@ class WP_URL_Manager_Permalink_Manager {
         add_filter('post_link', array($this, 'filter_post_link'), 10, 2);
         add_filter('post_type_link', array($this, 'filter_post_type_link'), 10, 2);
         add_filter('get_canonical_url', array($this, 'filter_canonical_url'), 10, 2);
+        add_filter('wpseo_canonical', array($this, 'filter_yoast_canonical'), 20);
+        add_action('wp_head', array($this, 'debug_yoast_hooks'), 1);
     }
 
     public function filter_post_link($permalink, $post) {
@@ -41,6 +43,27 @@ class WP_URL_Manager_Permalink_Manager {
         }
 
         return $this->generate_permalink($post, $canonical_url);
+    }
+
+    public function filter_yoast_canonical($canonical_url) {
+        $post = get_queried_object();
+
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            $post_info = $post instanceof WP_Post ? "post #{$post->ID} ({$post->post_name})" : gettype($post);
+            error_log("WP URL Manager [wpseo_canonical]: canonical_in=" . var_export($canonical_url, true) . " | queried_object=" . $post_info);
+        }
+
+        if (!$post instanceof WP_Post) {
+            return $canonical_url;
+        }
+
+        $result = $this->generate_permalink($post, $canonical_url);
+
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("WP URL Manager [wpseo_canonical]: canonical_out=" . var_export($result, true));
+        }
+
+        return $result;
     }
 
     private function generate_permalink($post, $default_permalink) {
@@ -86,6 +109,18 @@ class WP_URL_Manager_Permalink_Manager {
         }
 
         return false;
+    }
+
+    public function debug_yoast_hooks() {
+        if (!defined('WP_DEBUG') || !WP_DEBUG) {
+            return;
+        }
+        global $wp_filter;
+        $hooks_to_check = array('wpseo_canonical', 'wpseo_html_canonical', 'wpseo_head', 'Yoast\WP\SEO\Presenters\Canonical_Presenter');
+        foreach ($hooks_to_check as $hook) {
+            $exists = isset($wp_filter[$hook]) ? 'EXISTS' : 'NOT FOUND';
+            error_log("WP URL Manager [debug_hooks]: hook '{$hook}' => {$exists}");
+        }
     }
 
     public function get_original_permalink($post_id) {
