@@ -61,6 +61,28 @@ if (!defined('ABSPATH')) {
                         <span class="dashicons dashicons-plus-alt"></span>
                         <?php _e('Nouvelle règle', 'wp-url-manager'); ?>
                     </button>
+
+                    <div class="wp-url-manager-actions-secondary">
+                        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="display:inline;">
+                            <input type="hidden" name="action" value="wp_url_manager_export_rules">
+                            <?php wp_nonce_field('wp_url_manager_export'); ?>
+                            <button type="submit" class="button button-secondary">
+                                <span class="dashicons dashicons-download"></span>
+                                <?php _e('Exporter', 'wp-url-manager'); ?>
+                            </button>
+                        </form>
+
+                        <label class="button button-secondary" style="cursor:pointer;">
+                            <span class="dashicons dashicons-upload"></span>
+                            <?php _e('Importer', 'wp-url-manager'); ?>
+                            <input type="file" id="import-rules-file" accept=".json" style="display:none;">
+                        </label>
+
+                        <button type="button" class="button button-link-delete" id="purge-all-data">
+                            <span class="dashicons dashicons-trash"></span>
+                            <?php _e('Purger les données', 'wp-url-manager'); ?>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="wp-url-manager-rules-list">

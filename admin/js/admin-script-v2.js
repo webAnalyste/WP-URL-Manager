@@ -28,6 +28,12 @@
                 this.saveRule();
             });
             
+            // Import JSON
+            $('#import-rules-file').on('change', (e) => this.importRules(e));
+
+            // Purge données
+            $('#purge-all-data').on('click', () => this.purgeData());
+
             // Validation en temps réel
             $('#rule-target-pattern').on('input', () => this.validatePattern('#rule-target-pattern', '#target-validation', '#target-preview'));
             $('#rule-source-pattern').on('input', () => this.validatePattern('#rule-source-pattern', '#source-validation'));
@@ -218,6 +224,59 @@
                     $(previewSelector).html('<strong>Aperçu :</strong> ' + response.data.preview).addClass('show').show();
                 }
             });
+        },
+
+        importRules: function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (!confirm('Importer ces règles ? Elles s\'ajouteront aux règles existantes.')) {
+                $(e.target).val('');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('action', 'wp_url_manager_import_rules');
+            formData.append('nonce', wpUrlManager.nonce);
+            formData.append('import_file', file);
+
+            $.ajax({
+                url: wpUrlManager.ajaxUrl,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+            })
+            .done((response) => {
+                if (response.success) {
+                    this.showNotification(response.data.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    this.showNotification(response.data.message || 'Erreur import', 'error');
+                }
+            })
+            .fail(() => this.showNotification('Erreur de connexion', 'error'))
+            .always(() => $(e.target).val(''));
+        },
+
+        purgeData: function() {
+            if (!confirm('Supprimer TOUTES les données du plugin ? Cette action est irréversible.')) {
+                return;
+            }
+
+            $.post(wpUrlManager.ajaxUrl, {
+                action: 'wp_url_manager_purge_data',
+                nonce: wpUrlManager.nonce,
+            })
+            .done((response) => {
+                if (response.success) {
+                    this.showNotification(response.data.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    this.showNotification(response.data.message || 'Erreur', 'error');
+                }
+            })
+            .fail(() => this.showNotification('Erreur de connexion', 'error'));
         },
 
         showNotification: function(message, type = 'info') {

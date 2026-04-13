@@ -21,6 +21,9 @@ class WP_URL_Manager_Admin_Interface {
         add_action('wp_ajax_wp_url_manager_validate_pattern', array($this, 'ajax_validate_pattern'));
         add_action('wp_ajax_wp_url_manager_preview_url', array($this, 'ajax_preview_url'));
         add_action('wp_ajax_wp_url_manager_toggle_rule', array($this, 'ajax_toggle_rule'));
+        add_action('wp_ajax_wp_url_manager_import_rules', array($this, 'ajax_import_rules'));
+        add_action('wp_ajax_wp_url_manager_purge_data', array($this, 'ajax_purge_data'));
+        add_action('admin_post_wp_url_manager_export_rules', array($this, 'handle_export_rules'));
     }
 
     public function add_admin_menu() {
@@ -251,7 +254,7 @@ class WP_URL_Manager_Admin_Interface {
         }
 
         $rule = $this->rules_manager->get_rule($rule_id);
-        
+
         if (!$rule) {
             wp_send_json_error(array('message' => __('Règle introuvable', 'wp-url-manager')));
         }
@@ -260,5 +263,78 @@ class WP_URL_Manager_Admin_Interface {
         $this->rules_manager->update_rule($rule_id, $rule);
 
         wp_send_json_success(array('message' => __('Statut mis à jour', 'wp-url-manager')));
+    }
+
+    public function handle_export_rules() {
+        if (!current_user_can('manage_options')) {
+            wp_die(__('Permission refusée', 'wp-url-manager'));
+        }
+
+        check_admin_referer('wp_url_manager_export');
+
+        $rules = $this->rules_manager->get_all_rules();
+        $export = array(
+            'version' => WP_URL_MANAGER_VERSION,
+            'exported_at' => current_time('c'),
+            'rules' => $rules,
+        );
+
+        $filename = 'wp-url-manager-rules-' . date('Y-m-d') . '.json';
+
+        header('Content-Type: application/json');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Cache-Control: no-cache, no-store, must-revalidate');
+
+        echo wp_json_encode($export, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+
+    public function ajax_import_rules() {
+        check_ajax_referer('wp_url_manager_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission refusée', 'wp-url-manager')));
+        }
+
+        if (empty($_FILES['import_file']['tmp_name'])) {
+            wp_send_json_error(array('message' => __('Aucun fichier reçu', 'wp-url-manager')));
+        }
+
+        $raw = file_get_contents($_FILES['import_file']['tmp_name']);
+        $data = json_decode($raw, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE || empty($data['rules']) || !is_array($data['rules'])) {
+            wp_send_json_error(array('message' => __('Fichier JSON invalide', 'wp-url-manager')));
+        }
+
+        $imported = 0;
+        foreach ($data['rules'] as $rule) {
+            if (empty($rule['target_pattern'])) {
+                continue;
+            }
+            $this->rules_manager->add_rule($rule);
+            $imported++;
+        }
+
+        flush_rewrite_rules();
+
+        wp_send_json_success(array(
+            'message' => sprintf(__('%d règle(s) importée(s) avec succès', 'wp-url-manager'), $imported),
+        ));
+    }
+
+    public function ajax_purge_data() {
+        check_ajax_referer('wp_url_manager_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission refusée', 'wp-url-manager')));
+        }
+
+        delete_option('wp_url_manager_rules');
+        delete_option('wp_url_manager_rules_version');
+        delete_transient('wp_url_manager_update_cache');
+        flush_rewrite_rules();
+
+        wp_send_json_success(array('message' => __('Toutes les données ont été supprimées', 'wp-url-manager')));
     }
 }
